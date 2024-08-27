@@ -72,22 +72,22 @@ figure
 subplot(2,2,1)
 impulse(T0,T1)
 title('(a) LQG optimal vs frequency near gain boundary')
-legend('LQG optimal','$\Omega = 0.945$','Interpreter','latex')
+legend('LQG optimal','$\Omega = 0.945','Interpreter','latex')
 
 subplot(2,2,2)
 impulse(T0,T2)
 title('(b) LQG optimal vs frequency near passive boundary')
-legend('LQG optimal','$\Omega = 1.15$','Interpreter','latex')
+legend('LQG optimal','$\Omega = 1.41','Interpreter','latex')
 
 subplot(2,2,3)
 impulse(T0,T3)
 title('(c) LQG optimal vs frequency inbetween boundaries')
-legend('LQG optimal','$\Omega = 1.41$','Interpreter','latex')
+legend('LQG optimal','$\Omega = 1.15','Interpreter','latex')
 
 subplot(2,2,4)
 impulse(T0,T1,T2,T3,5)
 title('(d) Response to impulse disturbance d')
-legend('LQG optimal','$\Omega = 0.945$','$\Omega = 1.15$','$\Omega = 1.41$','Interpreter','latex')
+legend('LQG optimal','$\Omega = 0.945','$\Omega = 1.15','$\Omega = 1.41','Interpreter','latex')
 
 % C1 = getBlockValue(CL1,'C');
 % C2 = getBlockValue(CL2,'C');

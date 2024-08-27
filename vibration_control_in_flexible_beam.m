@@ -2,7 +2,8 @@ close all; clear; clc;
 
 % define parameters for the beam model transfer function G(s)
 xi = 0.05;
-alpha = [0.09877 -0.309 -0.891 0.5878 0.7071 -0.8091];
+% alpha = [0.09877 -0.309 -0.891 0.5878 0.7071 -0.8091];
+alpha = [0.09877 -0.309 -0.891 0.9 0.7071 -0.8091];
 w = [1 4 9 16 25 36];
 
 % define beam model transfer function G(s)

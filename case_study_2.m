@@ -1,7 +1,4 @@
 close all; clear; clc;
-
-%% SECOND ORDER CONTROLLER
-close all; clear; clc;
 %%% CREATING NOMINAL (PASSIVE) AND REAL (MIXED) PLANTS
 
 % define parameters for the beam model transfer function G(s)
@@ -78,23 +75,53 @@ CL1p = systune(CL0,R1,R2); % passive controller
 CL1m = systune(CL0,R1,[R2g,R2p]); % mixed controller
 
 %%% IMPULSE RESPONSES FROM d TO y
+% naming convention for Txyz
+% x = controller (0 - optimal, p - passive, m - mixed)
+% y = plant (p - passive, m - mixed)
+% z = input (d - process noise, n - measurement noise)
 
 % passive plant
-T0p = feedback(Gp,CLQG,+1);
-Tpp = feedback(Gp,getBlockValue(CL1p,'C'),+1);
-Tmp = feedback(Gp,getBlockValue(CL1m,'C'),+1);
+T0pd = feedback(Gp,CLQG,+1);
+% Tppd = feedback(Gp,getBlockValue(CL1p,'C'),+1);
+Tppd = getIOTransfer(CL1p,'d','y');
+% Tmpd = feedback(Gp,getBlockValue(CL1m,'C'),+1);
+Tmpd = getIOTransfer(CL1m,'d','y');
 
 % mixed plant
-T0m = feedback(Gm,CLQG,+1);
-Tpm = feedback(Gm,getBlockValue(CL1p,'C'),+1);
-Tmm = feedback(Gm,getBlockValue(CL1m,'C'),+1);
+T0md = feedback(Gm,CLQG,+1);
+Tpmd = feedback(Gm,getBlockValue(CL1p,'C'),+1);
+Tmmd = feedback(Gm,getBlockValue(CL1m,'C'),+1);
 
 % impulse responses
 figure
-impulse(T0p,Tpp,Tmp,T0m,Tpm,Tmm,5)
-title('Response to Impulse Disturbance d')
-legend('Optimal LQG (p)','2nd-order passive LQG (p)','2nd-order mixed LQG (p)','Optimal LQG (m)','2nd-order passive LQG (m)','2nd-order mixed LQG (m)')
+impulse(T0pd,Tppd,Tmpd,5)
+title('Response to Impulse Disturbance d for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
-%% HIGHER ORDER CONTROLLER
-close all; clear; clc;
+figure
+impulse(T0md,Tpmd,Tmmd,5)
+title('Response to Impulse Disturbance d for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
+%%% IMPULSE RESPONSES FROM n TO y
+
+% passive plant
+T0pn = feedback(Gp*CLQG,1,+1);
+Tppn = feedback(Gp*getBlockValue(CL1p,'C'),1,+1);
+Tmpn = feedback(Gp*getBlockValue(CL1m,'C'),1,+1);
+
+% mixed plant
+T0mn = feedback(Gm*CLQG,1,+1);
+Tpmn = feedback(Gm*getBlockValue(CL1p,'C'),1,+1);
+Tmmn = feedback(Gm*getBlockValue(CL1m,'C'),1,+1);
+
+% impulse responses
+figure
+impulse(T0pn,Tppn,Tmpn,5)
+title('Response to Impulse Disturbance n for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+figure
+impulse(T0mn,Tpmn,Tmmn,5)
+title('Response to Impulse Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')

@@ -74,12 +74,14 @@ R2p.Focus = [0,1.02];
 CL1p = systune(CL0,R1,R2); % passive controller
 CL1m = systune(CL0,R1,[R2g,R2p]); % mixed controller
 
-%%% IMPULSE RESPONSES FROM d TO y
+%%% IMPULSE RESPONSES
+
 % naming convention for Txyz
 % x = controller (0 - optimal, p - passive, m - mixed)
 % y = plant (p - passive, m - mixed)
 % z = input (d - process noise, n - measurement noise)
 
+% FROM d TO y
 % passive plant
 T0pd = feedback(Gp,CLQG,+1);
 % Tppd = feedback(Gp,getBlockValue(CL1p,'C'),+1);
@@ -92,19 +94,7 @@ T0md = feedback(Gm,CLQG,+1);
 Tpmd = feedback(Gm,getBlockValue(CL1p,'C'),+1);
 Tmmd = feedback(Gm,getBlockValue(CL1m,'C'),+1);
 
-% impulse responses
-figure
-impulse(T0pd,Tppd,Tmpd,5)
-title('Response to Impulse Disturbance d for Passive Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-figure
-impulse(T0md,Tpmd,Tmmd,5)
-title('Response to Impulse Disturbance d for Mixed Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-%%% IMPULSE RESPONSES FROM n TO y
-
+% FROM n TO y
 % passive plant
 T0pn = feedback(Gp*CLQG,1,+1);
 Tppn = feedback(Gp*getBlockValue(CL1p,'C'),1,+1);
@@ -115,13 +105,42 @@ T0mn = feedback(Gm*CLQG,1,+1);
 Tpmn = feedback(Gm*getBlockValue(CL1p,'C'),1,+1);
 Tmmn = feedback(Gm*getBlockValue(CL1m,'C'),1,+1);
 
-% impulse responses
-figure
-impulse(T0pn,Tppn,Tmpn,5)
-title('Response to Impulse Disturbance n for Passive Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+%%% PLOTTING
 
 figure
-impulse(T0mn,Tpmn,Tmmn,5)
-title('Response to Impulse Disturbance n for Mixed Plant')
+% impulse responses FROM d TO y
+subplot(2,2,1)
+impulse(T0pd,Tppd,Tmpd,5)
+title('(a) Response to Impulse Disturbance d for Passive Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+subplot(2,2,2)
+impulse(T0md,Tpmd,Tmmd,5)
+title('(b) Response to Impulse Disturbance d for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+% impulse responses FROM n TO y
+subplot(2,2,3)
+impulse(T0pn,Tppn,Tmpn,5)
+title('(c) Response to Impulse Disturbance n for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+subplot(2,2,4)
+impulse(T0mn,Tpmn,Tmmn,5)
+title('(d) Response to Impulse Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+%%% STABILITY CHECKS
+
+% initialising variables
+controllers = {'T0pd','Tppd','Tmpd','T0md','Tpmd','Tmmd','T0pn','Tppn','Tmpn','T0mn','Tpmn','Tmmn'};
+stability = zeros(1,length(controllers),'logical');
+
+% check stability
+for i = 1:length(controllers)
+    current_controller = evalin('base',controllers{i});
+    [~,p,~] = zpkdata(current_controller);
+    stability(i) = all(real(p{1}) < 0);
+end
+
+stability_results = cell2struct(num2cell(stability),controllers,2);

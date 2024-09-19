@@ -1,5 +1,5 @@
 close all; clear; clc;
-%%% CREATING NOMINAL (PASSIVE) AND REAL (MIXED) PLANTS
+%% CREATING NOMINAL (PASSIVE) AND REAL (MIXED) PLANTS
 
 % define parameters for the beam model transfer function G(s)
 xi = 0.05;
@@ -39,7 +39,7 @@ plot(cos(linspace(0,2*pi,1000)),sin(linspace(0,2*pi,1000))) % unit circle
 % frequency selected close to gain boundary: 1.02
 hold off
 
-%%% COMPUTING LQG CONTROLLERS
+%% COMPUTING LQG CONTROLLERS
 
 % compute optimal LQG controller for objective given in problem solution sheet, with noise variances
 [a,b,c,d] = ssdata(Gp);
@@ -74,73 +74,103 @@ R2p.Focus = [0,1.02];
 CL1p = systune(CL0,R1,R2); % passive controller
 CL1m = systune(CL0,R1,[R2g,R2p]); % mixed controller
 
-%%% IMPULSE RESPONSES
+%% CLOSED-LOOP SYSTEMS
 
 % naming convention for Txyz
-% x = controller (0 - optimal, p - passive, m - mixed)
+% x = input (d - process noise, n - measurement noise)
 % y = plant (p - passive, m - mixed)
-% z = input (d - process noise, n - measurement noise)
+% z = controller (0 - optimal, p - passive, m - mixed)
 
 % FROM d TO y
 % passive plant
-T0pd = feedback(Gp,CLQG,+1);
+Tdp0 = feedback(Gp,CLQG,+1);
 % Tppd = feedback(Gp,getBlockValue(CL1p,'C'),+1);
-Tppd = getIOTransfer(CL1p,'d','y');
+Tdpp = getIOTransfer(CL1p,'d','y');
 % Tmpd = feedback(Gp,getBlockValue(CL1m,'C'),+1);
-Tmpd = getIOTransfer(CL1m,'d','y');
+Tdpm = getIOTransfer(CL1m,'d','y');
 
 % mixed plant
-T0md = feedback(Gm,CLQG,+1);
-Tpmd = feedback(Gm,getBlockValue(CL1p,'C'),+1);
-Tmmd = feedback(Gm,getBlockValue(CL1m,'C'),+1);
+Tdm0 = feedback(Gm,CLQG,+1);
+Tdmp = feedback(Gm,getBlockValue(CL1p,'C'),+1);
+Tdmm = feedback(Gm,getBlockValue(CL1m,'C'),+1);
 
 % FROM n TO y
 % passive plant
-T0pn = feedback(Gp*CLQG,1,+1);
-Tppn = feedback(Gp*getBlockValue(CL1p,'C'),1,+1);
-Tmpn = feedback(Gp*getBlockValue(CL1m,'C'),1,+1);
+Tnp0 = feedback(Gp*CLQG,1,+1);
+Tnpp = feedback(Gp*getBlockValue(CL1p,'C'),1,+1);
+Tnpm = feedback(Gp*getBlockValue(CL1m,'C'),1,+1);
 
 % mixed plant
-T0mn = feedback(Gm*CLQG,1,+1);
-Tpmn = feedback(Gm*getBlockValue(CL1p,'C'),1,+1);
-Tmmn = feedback(Gm*getBlockValue(CL1m,'C'),1,+1);
+Tnm0 = feedback(Gm*CLQG,1,+1);
+Tnmp = feedback(Gm*getBlockValue(CL1p,'C'),1,+1);
+Tnmm = feedback(Gm*getBlockValue(CL1m,'C'),1,+1);
 
-%%% PLOTTING
+%% PLOTTING
 
 figure
 % impulse responses FROM d TO y
 subplot(2,2,1)
-impulse(T0pd,Tppd,Tmpd,5)
+impulse(Tdp0,Tdpp,Tdpm,5)
 title('(a) Response to Impulse Disturbance d for Passive Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
 subplot(2,2,2)
-impulse(T0md,Tpmd,Tmmd,5)
+impulse(Tdm0,Tdmp,Tdmm,5)
 title('(b) Response to Impulse Disturbance d for Mixed Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
 % impulse responses FROM n TO y
 subplot(2,2,3)
-impulse(T0pn,Tppn,Tmpn,5)
+impulse(Tnp0,Tnpp,Tnpm,5)
 title('(c) Response to Impulse Disturbance n for Passive Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
 subplot(2,2,4)
-impulse(T0mn,Tpmn,Tmmn,5)
+impulse(Tnm0,Tnmp,Tnmm,5)
 title('(d) Response to Impulse Disturbance n for Mixed Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
-%%% STABILITY CHECKS
+figure
+% step responses from d TO y
+subplot(2,2,1)
+step(Tdp0,Tdpp,Tdpm,5)
+title('(a) Response to Step Disturbance d for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+subplot(2,2,2)
+step(Tdm0,Tdmp,Tdmm,5)
+title('(b) Response to Step Disturbance d for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+% step responses FROM n TO y
+subplot(2,2,3)
+step(Tnp0,Tnpp,Tnpm,5)
+title('(c) Response to Step Disturbance n for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+subplot(2,2,4)
+step(Tnm0,Tnmp,Tnmm,5)
+title('(d) Response to Step Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+%% STABILITY CHECKS
 
 % initialising variables
-controllers = {'T0pd','Tppd','Tmpd','T0md','Tpmd','Tmmd','T0pn','Tppn','Tmpn','T0mn','Tpmn','Tmmn'};
-stability = zeros(1,length(controllers),'logical');
+closed_loop_systems = {'Tdp0','Tdpp','Tdpm','Tdm0','Tdmp','Tdmm','Tnp0','Tnpp','Tnpm','Tnm0','Tnmp','Tnmm'};
+stability = zeros(1,length(closed_loop_systems),'logical');
+max_real_pole = zeros(1,length(closed_loop_systems));
 
-% check stability
-for i = 1:length(controllers)
-    current_controller = evalin('base',controllers{i});
-    [~,p,~] = zpkdata(current_controller);
-    stability(i) = all(real(p{1}) < 0);
+% check all closed-loop systems
+for i = 1:length(closed_loop_systems)
+    current_system = evalin('base',closed_loop_systems{i});
+    [~,p,~] = zpkdata(current_system);
+    poles = cell2mat(p);
+
+    stability(i) = all(real(poles) < 0); % stability
+    max_real_pole(i) = max(real(poles)); % greatest pole real component
 end
 
-stability_results = cell2struct(num2cell(stability),controllers,2);
+stability_results_table = table(closed_loop_systems',stability',max_real_pole',...
+    'VariableNames',{'System','IsStable','MaxRealPole'});
+
+disp(stability_results_table)

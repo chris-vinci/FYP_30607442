@@ -106,52 +106,62 @@ Tnmp = feedback(Gm*getBlockValue(CL1p,'C'),1,+1);
 Tnmm = feedback(Gm*getBlockValue(CL1m,'C'),1,+1);
 
 %% PLOTTING
+t_settle = 100;
+t_transient = 10;
 
+% plots to show settling behaviour
 figure
-% impulse responses FROM d TO y
+% step responses FROM d TO y
 subplot(2,2,1)
-impulse(Tdp0,Tdpp,Tdpm,5)
-title('(a) Response to Impulse Disturbance d for Passive Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-subplot(2,2,2)
-impulse(Tdm0,Tdmp,Tdmm,5)
-title('(b) Response to Impulse Disturbance d for Mixed Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-% impulse responses FROM n TO y
-subplot(2,2,3)
-impulse(Tnp0,Tnpp,Tnpm,5)
-title('(c) Response to Impulse Disturbance n for Passive Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-subplot(2,2,4)
-impulse(Tnm0,Tnmp,Tnmm,5)
-title('(d) Response to Impulse Disturbance n for Mixed Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
-
-figure
-% step responses from d TO y
-subplot(2,2,1)
-step(Tdp0,Tdpp,Tdpm,5)
+step(Tdp0,Tdpp,Tdpm,t_settle)
 title('(a) Response to Step Disturbance d for Passive Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
 
 subplot(2,2,2)
-step(Tdm0,Tdmp,Tdmm,5)
+step(Tdm0,Tdmp,Tdmm,t_settle)
 title('(b) Response to Step Disturbance d for Mixed Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
 
 % step responses FROM n TO y
 subplot(2,2,3)
-step(Tnp0,Tnpp,Tnpm,5)
+step(Tnp0,Tnpp,Tnpm,t_settle)
 title('(c) Response to Step Disturbance n for Passive Plant')
-legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
 
 subplot(2,2,4)
-step(Tnm0,Tnmp,Tnmm,5)
+step(Tnm0,Tnmp,Tnmm,t_settle)
 title('(d) Response to Step Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
+
+% plots to show transient behaviour
+figure
+% step responses from d TO y
+subplot(2,2,1)
+step(Tdp0,Tdpp,Tdpm,t_transient)
+title('(a) Response to Step Disturbance d for Passive Plant')
 legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG')
+
+subplot(2,2,2)
+step(Tdm0,Tdmp,Tdmm,t_transient)
+title('(b) Response to Step Disturbance d for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
+
+% step responses FROM n TO y
+subplot(2,2,3)
+step(Tnp0,Tnpp,Tnpm,t_transient)
+title('(c) Response to Step Disturbance n for Passive Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
+
+subplot(2,2,4)
+step(Tnm0,Tnmp,Tnmm,t_transient)
+title('(d) Response to Step Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
+
+% plot for poster
+figure
+step(Tnm0,Tnmp,Tnmm,t_settle)
+title('Response to Step Disturbance n for Mixed Plant')
+legend('Optimal LQG','2nd-order passive LQG','2nd-order mixed LQG','Location','southeast')
 
 %% STABILITY CHECKS
 
@@ -167,7 +177,9 @@ for i = 1:length(closed_loop_systems)
     poles = cell2mat(p);
 
     stability(i) = all(real(poles) < 0); % stability
-    max_real_pole(i) = max(real(poles)); % greatest pole real component
+    % max_real_pole(i) = max(real(poles)); % greatest pole real component
+    [~,j] = max(real(poles));
+    max_real_pole(i) = poles(j);
 end
 
 stability_results_table = table(closed_loop_systems',stability',max_real_pole',...
